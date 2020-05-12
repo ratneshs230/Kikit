@@ -46,7 +46,10 @@
             android:layout_height="match_parent"
             android:id="@+id/eventhost"
             android:textColor="#B2DFDB"
-            android:layout_marginHorizontal="2dp"            android:layout_weight="1"
+            android:layout_marginHorizontal="2dp"
+
+
+            android:layout_weight="1"
 
             android:gravity="end"/>
 

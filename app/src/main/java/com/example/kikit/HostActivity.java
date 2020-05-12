@@ -1,12 +1,7 @@
 package com.example.kikit;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.app.SearchManager;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -23,17 +18,17 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -60,10 +55,10 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
     Uri imageUri;
     FirebaseUser thisUser;
     ImageView uploadImage;
-    Uri photoUrl;
     String date;
-    StorageReference storageReference;
-
+    StorageReference storageReference, fileref;
+    DatabaseReference reference;
+    Intent intent;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -71,13 +66,28 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
         setContentView(R.layout.activity_host);
         try {
             Intent i=getIntent();
-            userName=i.getStringExtra("userName");
+            uid = i.getStringExtra("UID");
+            Log.w(TAG, "UID RECIEVED-=>" + uid);
+
 
             mAuth = FirebaseAuth.getInstance();
-            uid = mAuth.getUid();
+            thisUser = mAuth.getCurrentUser();
+            userName = thisUser.getDisplayName();
             user_model = new User_model();
+
             thisUser = FirebaseAuth.getInstance().getCurrentUser();
             storageReference = FirebaseStorage.getInstance().getReference();
+            db = FirebaseDatabase.getInstance();
+
+            story = new Story_model();
+            reff = db.getReference().child("Story");
+
+            reference = reff.push();
+            pushKey = reference.getKey();
+            story.setStory_key(pushKey);
+
+
+
             uploadImage=findViewById(R.id.activity_image);
             host_date = findViewById(R.id.Host_date);
             host_desc = findViewById(R.id.Host_desc);
@@ -98,10 +108,10 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
             });
             spinner.setAdapter(adapter);
 
+            fileref = storageReference.child(uid)
+                    .child("Activity").child(System.currentTimeMillis() + "");
 
 
-
-            story = new Story_model();
             Log.w(TAG, uid);
 
 
@@ -145,8 +155,7 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
     }
 
 
-
-    private void save_image(Uri imageUri) {
+    private void save_image() {
 
 
     }
@@ -161,104 +170,77 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
         datePickerDialog.show();
     }
 
-    private void store_data() {
 
-        final String[] path = new String[1];
+    public void store_data() {
+        intent = new Intent(HostActivity.this, StoryDisplay.class);
 
-        story=new Story_model();
+        final String store_title = host_title.getText().toString();
+        final String store_desc = host_desc.getText().toString();
+        final String store_Date = host_date.getText().toString();
+        if (!store_title.isEmpty() && !store_Date.isEmpty()) {
+            final String[] path = new String[1];
 
-
-        StorageReference fileref=storageReference.child(uid)
-                .child("Activity");
-        db = FirebaseDatabase.getInstance();
-
-        reff =  db.getReference().child("Story");
-        DatabaseReference reference;
-        reference=reff.child(uid).push();
-        pushKey=reference.getKey();
-        story.setStory_key(pushKey);
+            try {
 
 
+                fileref.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                    @Override
+                    public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                        Log.w(TAG, "image Uploaded Successfully");
+                        Task<Uri> downloadUri = taskSnapshot.getStorage().getDownloadUrl();
 
-        final DatabaseReference story_reference=reff.child("Story/"
-                +uid);
+                        downloadUri.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                            @Override
+                            public void onSuccess(Uri uri) {
+                                path[0] = uri.toString();
 
-        Log.w(TAG,"Story_reference=>"+story_reference);
-
-
-        final Intent intent = new Intent(HostActivity.this, StoryDisplay.class);
-
-        if(imageUri!=null) {
-            fileref.putFile(imageUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-                @Override
-                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                    Log.w(TAG, "image Uploaded Successfully");
-                    Task<Uri> downloadUri = taskSnapshot.getStorage().getDownloadUrl();
-
-                    downloadUri.addOnSuccessListener(new OnSuccessListener<Uri>() {
-                        @Override
-                        public void onSuccess(Uri uri) {
-                            path[0] = uri.toString();
-
-                            Map<String, Object> imageObject = new HashMap<>();
-                            imageObject.put("story_image", path[0]);
+                                Map<String, Object> imageObject = new HashMap<>();
+                                imageObject.put("story_image", path[0]);
 
 
-                            story.setStory_image(path[0]);
+                                story.setStory_image(path[0]);
 
-                            Log.w(TAG,"URI=====>>>"+uri);
-                            Log.w(TAG,"Path=====>>>"+path[0]);
+                                Log.w(TAG, "URI=====>>>" + uri);
+                                Log.w(TAG, "Path=====>>>" + path[0]);
 
-                            intent.putExtra("image",path[0]);
-
-
-                            story_reference.updateChildren(imageObject);
-
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            Toast.makeText(HostActivity.this, "Error Uploading File", Toast.LENGTH_LONG).show();
-                        }
-                    });
-                }
-            });
-        }
-
-                final String store_title = host_title.getText().toString();
-                final String store_desc = host_desc.getText().toString();
-                final String store_Date = host_date.getText().toString();
-
-                            try {
-
-                        save_image(imageUri);
-                            String key=story_reference.getKey();
-                            Log.w(TAG,"Testing||referenceKey"+key);
-                            Log.w(TAG,"Testing||referenceKey.push()"+story_reference.push().getKey());
-                        story.setStory_Name(store_title);
-                        story.setStory_desc(store_desc);
-                        story.setStory_date(store_Date);
-                        story.setStory_category(Story_category);
-                        story.setStory_host(userName);
-                        story.setUID(mAuth.getCurrentUser().getUid());
-                        story.setStory_key(pushKey);
-                        story_reference.setValue(story);
+                                intent.putExtra("image", path[0]);
 
 
-                        Toast.makeText(HostActivity.this, "Event Hosted Successfully", Toast.LENGTH_LONG).show();
+                                reference.updateChildren(imageObject);
 
-                        intent.putExtra("title", store_title);
-                        intent.putExtra("desc", store_desc);
-                        intent.putExtra("date", store_Date);
-                        intent.putExtra("username", userName);
-                        intent.putExtra("uid", uid);
-                        intent.putExtra("StoryKey",pushKey);
-
-                        startActivity(intent);
+                            }
+                        }).addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                Log.w(TAG, "Image linking failed");
+                                Toast.makeText(HostActivity.this, "Error Uploading File", Toast.LENGTH_LONG).show();
+                            }
+                        });
                     }
-                    catch (Exception e)
-                    {e.printStackTrace();}
-                        }
+                });
+
+
+                Log.w(TAG, "Testing||referenceKey" + pushKey);
+                story.setStory_Name(store_title);
+                story.setStory_desc(store_desc);
+                story.setStory_date(store_Date);
+                story.setStory_category(Story_category);
+                story.setStory_host(userName);
+                story.setUID(uid);
+                story.setStory_key(pushKey);
+                reference.setValue(story);
+
+
+                Toast.makeText(HostActivity.this, "Event Hosted Successfully", Toast.LENGTH_LONG).show();
+
+                intent.putExtra("StoryKey",pushKey);
+                intent.putExtra("UID", uid);
+
+                startActivity(intent);
+            } catch (Exception e) {e.printStackTrace();}
+        }
+    }
+
 
 
     @Override

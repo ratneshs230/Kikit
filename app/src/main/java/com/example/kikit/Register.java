@@ -1,9 +1,5 @@
 package com.example.kikit;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-
 import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
@@ -18,7 +14,10 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.bumptech.glide.Glide;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -96,7 +95,19 @@ Register extends AppCompatActivity implements OnClickListener {
                     register_btn.setOnClickListener(new OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            email_Register();
+                            mailId = email.getText().toString();
+                            pass = password.getText().toString();
+                            Name = name.getText().toString();
+                            Log.w(TAG, "email_RegisterImgUrl=>" + imageUri);
+
+                            if (Name.isEmpty()) {
+                                name.setError("Please Enter Username");
+                            } else if (pass.isEmpty()) {
+                                password.setError("Password Required");
+                            } else if (mailId.isEmpty()) {
+                                email.setError("Mail Id Required");
+                            } else
+                                email_Register();
 
                         }
                     });
@@ -113,10 +124,7 @@ Register extends AppCompatActivity implements OnClickListener {
 
 
         private void email_Register() {
-            mailId = email.getText().toString();
-            pass = password.getText().toString();
-            Name = name.getText().toString();
-            Log.w(TAG,"email_RegisterImgUrl=>"+imageUri);
+
             final String[] uid = new String[1];
             mAuth.createUserWithEmailAndPassword(mailId,pass).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                 @Override
@@ -182,11 +190,11 @@ private void setUserProfileImage(Uri uri){
 
 
     private void user_data_save(String name, String email, final String password, final String uid, Uri image, FirebaseUser user) {
-        final StorageReference fileref=storageReference.child("profile Images").child(uid+"jpeg");
+        final StorageReference fileref = storageReference.child("profile Images").child(uid);
         db = FirebaseDatabase.getInstance();
         reff = db.getReference().child("User");
         DatabaseReference reference;
-        reference=reff.child(uid).push();
+        reference = reff.child(uid);
         pushKey=reference.getKey();
         user_model.setUser_key(pushKey);
 
@@ -203,7 +211,7 @@ private void setUserProfileImage(Uri uri){
                     @Override
                     public void onSuccess(Uri uri) {
                         String path=uri.toString();
-                    reff.child(uid).child(user_model.getUser_key()).child("profilePic_url").setValue(path);
+                        reff.child(uid).child("profilePic_url").setValue(path);
                         user_model.setPhoto_url(uri);
                     }
 
@@ -234,7 +242,7 @@ private void setUserProfileImage(Uri uri){
 
         Intent intent = new Intent(Register.this, Homepage.class);
         intent.putExtra("UID", uid);
-        intent.putExtra("userName",user_model.getName());
+
         startActivity(intent);
     }
 

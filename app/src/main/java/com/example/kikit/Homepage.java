@@ -1,30 +1,24 @@
 package com.example.kikit;
 
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Intent;
-import android.media.Image;
-import android.net.Uri;
-import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import com.bumptech.glide.Glide;
 import com.firebase.ui.database.FirebaseRecyclerAdapter;
 import com.firebase.ui.database.FirebaseRecyclerOptions;
-import com.firebase.ui.database.SnapshotParser;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
@@ -40,7 +34,7 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
     private RecyclerView story_Recycler;
     private LinearLayoutManager linearLayoutManager;
     Story_model story_model;
-    StoryDisplay mstory_display;
+    User_model user_model;
     private GridLayoutManager gridLayoutManager ;
     private FirebaseRecyclerAdapter adapter;
      FirebaseAuth mAuth;
@@ -53,45 +47,68 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_homepage);
-        Intent i=getIntent();
-        uid=i.getStringExtra("UID");
-        userName=i.getStringExtra("userName");
-
-        add = findViewById(R.id.add);
-        dineouts = findViewById(R.id.dineouts);
-        trips = findViewById(R.id.trips);
-        events = findViewById(R.id.events);
-        sports = findViewById(R.id.sports);
+        try {
+            Intent i = getIntent();
+            uid = i.getStringExtra("UID");
+            Log.w(TAG, "UID RECIEVED-=>" + uid);
 
 
+            add = findViewById(R.id.add);
+            dineouts = findViewById(R.id.dineouts);
+            trips = findViewById(R.id.trips);
+            events = findViewById(R.id.events);
+            sports = findViewById(R.id.sports);
 
 
+            story_Recycler = findViewById(R.id.recyclerView);
+            linearLayoutManager = new LinearLayoutManager(this);
+            story_Recycler.setLayoutManager(linearLayoutManager);
+            story_Recycler.setHasFixedSize(true);
 
-        mstory_display=new StoryDisplay();
-        story_Recycler = findViewById(R.id.recyclerView);
-        linearLayoutManager = new LinearLayoutManager(this);
-        story_Recycler.setLayoutManager(linearLayoutManager);
-        story_Recycler.setHasFixedSize(true);
+            mAuth = FirebaseAuth.getInstance();
+            user = mAuth.getCurrentUser();
+            gerUserData();
+            Log.w(TAG, user.getDisplayName() + "");
+            if (user == null) {
+                Intent intent = new Intent(Homepage.this, AuthSelect.class);
+                startActivity(intent);
+            } else {
+                gerUserData();
 
-        mAuth=FirebaseAuth.getInstance();
-        user=mAuth.getCurrentUser();
-
-        if(mAuth.getCurrentUser()==null){
-            Intent intent=new Intent(Homepage.this,AuthSelect.class);
-            startActivity(intent);
+                fetch();
+            }
+            dineouts.setOnClickListener(this);
+            trips.setOnClickListener(this);
+            sports.setOnClickListener(this);
+            events.setOnClickListener(this);
+            add.setOnClickListener(this);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-        else{
-        fetch();
-        }
-        dineouts.setOnClickListener(this);
-        trips.setOnClickListener(this);
-        sports.setOnClickListener(this);
-        events.setOnClickListener(this);
-        add.setOnClickListener(this);
     }
 
+    private void gerUserData() {
+        final DatabaseReference database = FirebaseDatabase.getInstance().getReference("User").child(uid);
+        database.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
 
 
+                Log.w(TAG, "DATASNAPsHOT-->>" + dataSnapshot);
+
+                if (dataSnapshot.child("name").getValue() != null) {
+                    userName = dataSnapshot.child("name").getValue().toString();
+                }
+                Log.w(TAG, "UserName--" + userName);
+            }
+
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+    }
     private void fetch() {
 
         Query query = FirebaseDatabase.getInstance().getReference().child("Story");
@@ -120,13 +137,8 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
                     public void onClick(View v) {
                         Intent intent=new Intent(Homepage.this,StoryDisplay.class);
 
-
-                        intent.putExtra("title",model.getStory_Name());
-                        intent.putExtra("desc", model.getStory_desc());
-                        intent.putExtra("date", model.getStory_date());
-                        intent.putExtra("username",model.getStory_host());
+                        intent.putExtra("StoryKey", model.getStory_key());
                         intent.putExtra("uid", model.getUID());
-                        intent.putExtra("image",model.getStory_image());
                         startActivity(intent);
                     }
                 });
@@ -174,7 +186,8 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
             eventdesc.setText(string);
         }
         public void setEvent_img(String image){
-        Picasso.get().load(image).into(event_img);
+
+            Picasso.get().load(image).into(event_img);
         }
 
 
@@ -228,6 +241,8 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
                         intent.putExtra("date", model.getStory_date());
                         intent.putExtra("username",model.getStory_host());
                         intent.putExtra("uid", model.getUID());
+                        intent.putExtra("StoryKey", model.getStory_key());
+
                         intent.putExtra("image",model.getStory_image());
                         startActivity(intent);                    }
                 });
@@ -250,11 +265,8 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
         switch (v.getId()) {
             case R.id.add: {
                 String name=user.getDisplayName();
-                Log.w(TAG,"name--==>>"+name);
-                Log.w(TAG,"userName--==>>"+userName);
-                Log.w(TAG,"getDisplay_name--==>>"+FirebaseAuth.getInstance().getCurrentUser().getDisplayName());
                 Intent intent = new Intent(Homepage.this, HostActivity.class);
-                intent.putExtra("userName",name);
+                intent.putExtra("UID", uid);
                 startActivity(intent);
                 break;
             }
