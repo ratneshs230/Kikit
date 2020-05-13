@@ -138,7 +138,7 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
                         Intent intent=new Intent(Homepage.this,StoryDisplay.class);
 
                         intent.putExtra("StoryKey", model.getStory_key());
-                        intent.putExtra("uid", model.getUID());
+                        intent.putExtra("uid", uid);
                         startActivity(intent);
                     }
                 });
