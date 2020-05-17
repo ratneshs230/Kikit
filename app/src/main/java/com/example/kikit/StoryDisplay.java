@@ -94,7 +94,7 @@ public class StoryDisplay extends AppCompatActivity {
             coming.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent=new Intent(StoryDisplay.this,Interested_list.class);
+                    Intent intent=new Intent(StoryDisplay.this,All_Users.class);
                     intent.putExtra("StoryKey",storyKey);
                     intent.putExtra("UID",uid);
                     startActivity(intent);

@@ -17,7 +17,8 @@
         android:roundIcon="@mipmap/logo"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name=".Interested_list"></activity>
+        <activity android:name=".All_Users"></activity>
+        <activity android:name=".Interested_list" />
         <activity android:name=".UserProfile" />
         <!--
              The API key for Google Maps-based APIs is defined as a string resource.

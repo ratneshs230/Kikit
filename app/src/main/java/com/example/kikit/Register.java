@@ -124,42 +124,42 @@ Register extends AppCompatActivity implements OnClickListener {
 
 
         private void email_Register() {
+try {
+    final String[] uid = new String[1];
+    mAuth.createUserWithEmailAndPassword(mailId, pass).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+        @Override
+        public void onComplete(@NonNull Task<AuthResult> task) {
+            if (task.isSuccessful()) {
 
-            final String[] uid = new String[1];
-            mAuth.createUserWithEmailAndPassword(mailId,pass).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                @Override
-                public void onComplete(@NonNull Task<AuthResult> task) {
-                    if(task.isSuccessful()){
+                Log.d(TAG, "User Creation Successful");
 
-                        Log.d(TAG,"User Creation Successful");
+                try {
+                    user = FirebaseAuth.getInstance().getCurrentUser();
+                    uid[0] = user.getUid();
 
-                       try {
-                          user=FirebaseAuth.getInstance().getCurrentUser();
-                            uid[0] =user.getUid();
+                    if (Name != null && mailId != null && pass != null && uid[0] != null && imageUri != null && user != null) {
+                        user_data_save(Name, mailId, pass, uid[0], imageUri, user);
+                        register_status = true;
 
-                            if(Name!=null && mailId!=null && pass!=null && uid[0] !=null && imageUri!=null && user!=null) {
-                                user_data_save(Name, mailId, pass, uid[0], imageUri, user);
-                                register_status=true;
-
-                            }
-                            else{
-                                Toast.makeText(getApplicationContext(),"Please enter all entities including Image",Toast.LENGTH_LONG).show();
-                            }
-
-                       }
-                       catch (Exception e){
-                           Log.w(TAG,"Exception in user=>"+e);
-                       }
-
+                    } else {
+                        Toast.makeText(getApplicationContext(), "Please enter all entities including Image", Toast.LENGTH_LONG).show();
                     }
-                    else{
 
-                        Log.w(TAG, "signInWithEmail:failure", task.getException());
-                        Toast.makeText(Register.this, "Authentication failed.",
-                                Toast.LENGTH_SHORT).show();                }
+                } catch (Exception e) {
+                    Log.w(TAG, "Exception in user=>" + e);
                 }
-            });
 
+            } else {
+
+                Log.w(TAG, "signInWithEmail:failure", task.getException());
+                Toast.makeText(Register.this, "Authentication failed.",
+                        Toast.LENGTH_SHORT).show();
+            }
+        }
+    });
+}catch(Exception e){
+    e.printStackTrace();
+}
         }
 /*private void getDownloadUrl(StorageReference storageReference){
         storageReference.getDownloadUrl()
@@ -171,6 +171,7 @@ Register extends AppCompatActivity implements OnClickListener {
                 });
 }*/
 private void setUserProfileImage(Uri uri){
+    try{
         FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
         UserProfileChangeRequest request=new UserProfileChangeRequest.Builder()
                 .setPhotoUri(uri)
@@ -185,11 +186,16 @@ private void setUserProfileImage(Uri uri){
             public void onFailure(@NonNull Exception e) {
                 Toast.makeText(Register.this, "Profile image failed to download", Toast.LENGTH_SHORT).show();
             }
-        });
+        });}
+    catch (Exception e)
+    {
+        e.printStackTrace();
+    }
 }
 
 
     private void user_data_save(String name, String email, final String password, final String uid, Uri image, FirebaseUser user) {
+       try{
         final StorageReference fileref = storageReference.child("profile Images").child(uid);
         db = FirebaseDatabase.getInstance();
         reff = db.getReference().child("User");
@@ -244,6 +250,11 @@ private void setUserProfileImage(Uri uri){
         intent.putExtra("UID", uid);
 
         startActivity(intent);
+       }
+       catch (Exception e)
+       {
+           e.printStackTrace();
+       }
     }
 
     @Override

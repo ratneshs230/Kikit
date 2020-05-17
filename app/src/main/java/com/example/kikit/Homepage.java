@@ -88,6 +88,7 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
     }
 
     private void gerUserData() {
+        try{
         final DatabaseReference database = FirebaseDatabase.getInstance().getReference("User").child(uid);
         database.addValueEventListener(new ValueEventListener() {
             @Override
@@ -108,6 +109,11 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
 
             }
         });
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
     }
     private void fetch() {
 
@@ -209,54 +215,59 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
         adapter.stopListening();
     }
     public void fetch_category_wise(String category) {
-        story_model = new Story_model();
-        DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-        Query query = database.child("Story").orderByChild("story_category").equalTo(category);
+        try {
+            story_model = new Story_model();
+            DatabaseReference database = FirebaseDatabase.getInstance().getReference();
+            Query query = database.child("Story").orderByChild("story_category").equalTo(category);
 
-        FirebaseRecyclerOptions<Story_model> options = new FirebaseRecyclerOptions.Builder<Story_model>()
-                .setQuery(query, Story_model.class)
-                .build();
-        FirebaseRecyclerAdapter<Story_model, ViewHolder> cat_adapter = new FirebaseRecyclerAdapter<Story_model, ViewHolder>(options) {
-            @NonNull
-            @Override
-            public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview, parent, false);
-                return new ViewHolder(view);
-            }
+            FirebaseRecyclerOptions<Story_model> options = new FirebaseRecyclerOptions.Builder<Story_model>()
+                    .setQuery(query, Story_model.class)
+                    .build();
+            FirebaseRecyclerAdapter<Story_model, ViewHolder> cat_adapter = new FirebaseRecyclerAdapter<Story_model, ViewHolder>(options) {
+                @NonNull
+                @Override
+                public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+                    View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview, parent, false);
+                    return new ViewHolder(view);
+                }
 
-            @Override
-            protected void onBindViewHolder(@NonNull ViewHolder holder, final int position, @NonNull final Story_model model) {
-                holder.setEventname(model.getStory_Name());
-                holder.setEventhost(model.getStory_host());
-                holder.setEventdesc(model.getStory_desc());
-                holder.setEvent_img(model.getStory_image());
-                holder.root.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent=new Intent(Homepage.this,StoryDisplay.class);
-
-
-                        intent.putExtra("title",model.getStory_Name());
-                        intent.putExtra("desc", model.getStory_desc());
-                        intent.putExtra("date", model.getStory_date());
-                        intent.putExtra("username",model.getStory_host());
-                        intent.putExtra("uid", model.getUID());
-                        intent.putExtra("StoryKey", model.getStory_key());
-
-                        intent.putExtra("image",model.getStory_image());
-                        startActivity(intent);                    }
-                });
+                @Override
+                protected void onBindViewHolder(@NonNull ViewHolder holder, final int position, @NonNull final Story_model model) {
+                    holder.setEventname(model.getStory_Name());
+                    holder.setEventhost(model.getStory_host());
+                    holder.setEventdesc(model.getStory_desc());
+                    holder.setEvent_img(model.getStory_image());
+                    holder.root.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Intent intent = new Intent(Homepage.this, StoryDisplay.class);
 
 
+                            intent.putExtra("title", model.getStory_Name());
+                            intent.putExtra("desc", model.getStory_desc());
+                            intent.putExtra("date", model.getStory_date());
+                            intent.putExtra("username", model.getStory_host());
+                            intent.putExtra("uid", model.getUID());
+                            intent.putExtra("StoryKey", model.getStory_key());
 
-            }
+                            intent.putExtra("image", model.getStory_image());
+                            startActivity(intent);
+                        }
+                    });
 
 
-        };
+                }
 
-        story_Recycler.setAdapter(cat_adapter);
-        cat_adapter.startListening();
 
+            };
+
+            story_Recycler.setAdapter(cat_adapter);
+            cat_adapter.startListening();
+        }
+        catch (Exception e)
+        {
+            e.printStackTrace();
+        }
 
 
     }

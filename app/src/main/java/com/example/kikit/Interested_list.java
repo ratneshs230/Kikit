@@ -48,7 +48,8 @@ public class Interested_list extends AppCompatActivity {
     User_model user_model;
     private FirebaseRecyclerAdapter adapter;
     String userName,image;
-
+    List<String> id;
+Story_model model;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -58,7 +59,7 @@ public class Interested_list extends AppCompatActivity {
         uid=i.getStringExtra("UID");
 
         interestedList=new HashMap<>();
-
+        id=new ArrayList<>();
 
         recyclerView=findViewById(R.id.interestedRecycler);
 
@@ -69,21 +70,40 @@ public class Interested_list extends AppCompatActivity {
 
 
         db = FirebaseDatabase.getInstance();
-
-        story = new Story_model();
+            model=new Story_model();
         reff = db.getReference().child("Joined");
 
-        reff.addValueEventListener(new ValueEventListener() {
+
+        Query query=reff.orderByChild("storyKey").equalTo(storyKey);
+        query.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.w(TAG,"DAtasnapshot==>"+dataSnapshot+"");
-                if(dataSnapshot.child("storyKey").equals(storyKey)){
+                Log.w(TAG, "DAtasnapshot==>" + dataSnapshot + "");
+                for(DataSnapshot ds:dataSnapshot.getChildren()){
+                    Log.w(TAG, "ds==>" + ds + "");
+                    id.add((String) ds.child("UID").getValue());
 
-                    String userId=dataSnapshot.child("UID").getValue().toString();
-                    Log.w(TAG,"Users->"+userId);
-                  //  fetch_category_wise(userId);
                 }
+
+
+
             }
+
+            @Override
+            public void onCancelled(@NonNull DatabaseError databaseError) {
+
+            }
+        });
+      /*  reff.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
+
+                Log.w(TAG,"Model=>"+model);
+                fetch_category_wise(model.getUID());
+                gerUserData(model.getUID());
+                }}
+
 
             @Override
             public void onCancelled(@NonNull DatabaseError databaseError) {
@@ -92,11 +112,11 @@ public class Interested_list extends AppCompatActivity {
         });
 
 
-
+*/
     }
 
 
-    private void gerUserData(String userID) {
+    private void getUserData(String userID) {
         final DatabaseReference database = FirebaseDatabase.getInstance().getReference("User").child(userID);
         database.addValueEventListener(new ValueEventListener() {
             @Override
@@ -165,6 +185,7 @@ public class Interested_list extends AppCompatActivity {
 
         };
         recyclerView.setAdapter(adapter);
+        adapter.startListening();
 
 
 
@@ -206,7 +227,7 @@ public class Interested_list extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-      // adapter.startListening();
+    //
     }
 
     @Override
@@ -215,5 +236,30 @@ public class Interested_list extends AppCompatActivity {
        // adapter.stopListening();
     }
 
+
+    public class Joined_Events {
+        String UID;
+
+        public String getUID() {
+            return UID;
+        }
+
+        public void setUID(String UID) {
+            this.UID = UID;
+        }
+
+        public String getStoryKey() {
+            return storyKey;
+        }
+
+        public void setStoryKey(String storyKey) {
+            this.storyKey = storyKey;
+        }
+
+
+
+
+        String storyKey;
+    }
 
 }

@@ -12,9 +12,27 @@ public class Story_model {
         private String story_category;
         private String UID;
         private String story_image;
+        private String storyKey;
 
+    public Story_model(String story_Name, String story_desc, String story_date, String story_host, String story_category, String UID, String story_image, String storyKey, String story_key) {
+        this.story_Name = story_Name;
+        this.story_desc = story_desc;
+        this.story_date = story_date;
+        this.story_host = story_host;
+        this.story_category = story_category;
+        this.UID = UID;
+        this.story_image = story_image;
+        this.storyKey = storyKey;
+        this.story_key = story_key;
+    }
 
+    public String getStoryKey() {
+        return storyKey;
+    }
 
+    public void setStoryKey(String storyKey) {
+        this.storyKey = storyKey;
+    }
 
     public String getStory_image() {
         return story_image;
