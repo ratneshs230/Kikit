@@ -14,6 +14,7 @@ import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -59,7 +60,7 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
     StorageReference storageReference, fileref;
     DatabaseReference reference;
     Intent intent;
-
+    ProgressBar progress;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -87,7 +88,7 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
             story.setStory_key(pushKey);
 
 
-
+            progress=findViewById(R.id.progressBar);
             uploadImage=findViewById(R.id.activity_image);
             host_date = findViewById(R.id.Host_date);
             host_desc = findViewById(R.id.Host_desc);
@@ -129,7 +130,11 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
             Submit.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    progress.setVisibility(View.VISIBLE);
                     store_data();
+
+                    progress.setVisibility(View.GONE);
+                    startActivity(intent);
                     Submit.setEnabled(false);
 
                 }
@@ -236,7 +241,8 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
                 intent.putExtra("StoryKey",pushKey);
                 intent.putExtra("UID", uid);
 
-                startActivity(intent);
+
+
             } catch (Exception e) {e.printStackTrace();}
         }
     }

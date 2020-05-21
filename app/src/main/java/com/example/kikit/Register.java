@@ -124,52 +124,46 @@ Register extends AppCompatActivity implements OnClickListener {
 
 
         private void email_Register() {
-try {
-    final String[] uid = new String[1];
-    mAuth.createUserWithEmailAndPassword(mailId, pass).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-        @Override
-        public void onComplete(@NonNull Task<AuthResult> task) {
-            if (task.isSuccessful()) {
+                    try {
+                        final String[] uid = new String[1];
+                        mAuth.createUserWithEmailAndPassword(mailId, pass).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                            @Override
+                            public void onComplete(@NonNull Task<AuthResult> task) {
+                                if (task.isSuccessful()) {
 
-                Log.d(TAG, "User Creation Successful");
+                                    Log.d(TAG, "User Creation Successful");
 
-                try {
-                    user = FirebaseAuth.getInstance().getCurrentUser();
-                    uid[0] = user.getUid();
+                                    try {
+                                        user = FirebaseAuth.getInstance().getCurrentUser();
+                                        uid[0] = user.getUid();
 
-                    if (Name != null && mailId != null && pass != null && uid[0] != null && imageUri != null && user != null) {
-                        user_data_save(Name, mailId, pass, uid[0], imageUri, user);
-                        register_status = true;
 
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Please enter all entities including Image", Toast.LENGTH_LONG).show();
+
+                                        if (Name != null && mailId != null && pass != null && uid[0] != null && imageUri != null && user != null) {
+                                            user_data_save(Name, mailId, pass, uid[0], imageUri, user);
+                                            register_status = true;
+
+                                        } else {
+                                            Toast.makeText(getApplicationContext(), "Please enter all entities including Image", Toast.LENGTH_LONG).show();
+                                        }
+
+                                    } catch (Exception e) {
+                                        Log.w(TAG, "Exception in user=>" + e);
+                                    }
+
+                                } else {
+
+                                    Log.w(TAG, "signInWithEmail:failure", task.getException());
+                                    Toast.makeText(Register.this, "Authentication failed.",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                        });
+                    }catch(Exception e){
+                        e.printStackTrace();
                     }
-
-                } catch (Exception e) {
-                    Log.w(TAG, "Exception in user=>" + e);
-                }
-
-            } else {
-
-                Log.w(TAG, "signInWithEmail:failure", task.getException());
-                Toast.makeText(Register.this, "Authentication failed.",
-                        Toast.LENGTH_SHORT).show();
-            }
-        }
-    });
-}catch(Exception e){
-    e.printStackTrace();
-}
-        }
-/*private void getDownloadUrl(StorageReference storageReference){
-        storageReference.getDownloadUrl()
-                .addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        setUserProfileImage(uri);
-                    }
-                });
-}*/
+                            }
+        /*
 private void setUserProfileImage(Uri uri){
     try{
         FirebaseUser user=FirebaseAuth.getInstance().getCurrentUser();
@@ -191,7 +185,7 @@ private void setUserProfileImage(Uri uri){
     {
         e.printStackTrace();
     }
-}
+}*/
 
 
     private void user_data_save(String name, String email, final String password, final String uid, Uri image, FirebaseUser user) {
@@ -204,9 +198,21 @@ private void setUserProfileImage(Uri uri){
         pushKey=reference.getKey();
         user_model.setUser_key(pushKey);
 
-
-
-        setUserProfileImage(image);
+           UserProfileChangeRequest request=new UserProfileChangeRequest.Builder()
+                   .setPhotoUri(image)
+                   .setDisplayName(name)
+                   .build();
+           user.updateProfile(request).addOnSuccessListener(new OnSuccessListener<Void>() {
+               @Override
+               public void onSuccess(Void aVoid) {
+                   Toast.makeText(Register.this,"Profile Updated.",Toast.LENGTH_LONG).show();
+               }
+           }).addOnFailureListener(new OnFailureListener() {
+               @Override
+               public void onFailure(@NonNull Exception e) {
+                   Toast.makeText(Register.this, "Profile image failed to download", Toast.LENGTH_SHORT).show();
+               }
+           });
 
         fileref.putFile(image).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -217,7 +223,7 @@ private void setUserProfileImage(Uri uri){
                     @Override
                     public void onSuccess(Uri uri) {
                         String path=uri.toString();
-                        reff.child(uid).child("profilePic_url").setValue(path);
+                        reff.child(uid).child("photo_url").setValue(path);
                         user_model.setPhoto_url(uri);
                     }
 

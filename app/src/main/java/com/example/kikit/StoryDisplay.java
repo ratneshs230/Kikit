@@ -1,6 +1,7 @@
 package com.example.kikit;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,7 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class StoryDisplay extends AppCompatActivity {
-    TextView title, desc, date, host, home, track;
+    TextView title, desc, date, host, home;
     DatabaseReference reff, reference,joinedReference;
     String TAG = "StoryDisplay";
     FirebaseDatabase db;
@@ -33,13 +34,14 @@ public class StoryDisplay extends AppCompatActivity {
 
     String storyKey;
     FirebaseAuth mAuth;
-    String Display_Title, Display_desc, Display_date, Display_host;
+
     String current_user, uid;
-    FirebaseUser firebaseUser;
     ImageView display_storyImage;
-    String image;
+    Uri image;
     Story_model story;
     Map<String, Object> joinedObject;
+    FirebaseUser user;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -51,10 +53,11 @@ public class StoryDisplay extends AppCompatActivity {
             uid = i.getStringExtra("uid");
             storyKey = i.getStringExtra("StoryKey");
             Log.w(TAG, "Story_key+UID" + storyKey + "<<-->>");
+
+
             joinedObject = new HashMap<>();
             joinedObject.put("UID",uid);
             joinedObject.put("storyKey",storyKey);
-
 
             title = findViewById(R.id.title);
             desc = findViewById(R.id.story_desc);
@@ -72,45 +75,39 @@ public class StoryDisplay extends AppCompatActivity {
             reff = db.getReference().child("Story");
 
 
-            joinedReference=db.getReference().child("Joined");
+            joinedReference=db.getReference().child("Joined_Events");
             reference = reff.child(storyKey);
 
 
             fetch_story();
 
-            title.setText(story.getStory_Name());
+           /* title.setText(story.getStory_Name());
             desc.setText(story.getStory_desc());
             host.setText(story.getStory_host());
             date.setText(story.getStory_date());
             Picasso.get().load(story.getStory_image()).into(display_storyImage);
-            host.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    Intent intent = new Intent(StoryDisplay.this, UserProfile.class);
-                    intent.putExtra("uid", uid);
-                    startActivity(intent);
-                }
-            });
+*/
+
+
             coming.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent intent=new Intent(StoryDisplay.this,All_Users.class);
+                    Intent intent=new Intent(StoryDisplay.this,Interested_list.class);
                     intent.putExtra("StoryKey",storyKey);
-                    intent.putExtra("UID",uid);
+                    intent.putExtra("uid",uid);
+
                     startActivity(intent);
                 }
             });
+
             join.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     try {
+                        joinedReference.push().setValue(joinedObject);
 
                         Toast.makeText(getApplicationContext(), "Activity Joined Succesfully", Toast.LENGTH_LONG).show();
-
-
-                        joinedReference.push().setValue(joinedObject);
-                        //Intent intent=new Intent(StoryDisplay.this,MapsActivity.class);
-                        //startActivity(intent);
+                        join.setEnabled(false);
                     } catch (Exception e) {
                         Log.w(TAG, "ERROR=>" + e);
                     }

@@ -43,7 +43,6 @@ public class Interested_list extends AppCompatActivity {
     DatabaseReference reff,reference;
     Map<String,String> interestedList;
     String TAG="Interested";
-    List<String> comingIDs;
     LinearLayoutManager linearLayoutManager;
     User_model user_model;
     private FirebaseRecyclerAdapter adapter;
@@ -55,11 +54,12 @@ Story_model model;
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_interested_list);
         Intent i=getIntent();
+        uid=i.getStringExtra("uid");
         storyKey=i.getStringExtra("StoryKey");
-        uid=i.getStringExtra("UID");
+        Log.w(TAG, "storykey==>" + storyKey + "");
 
         interestedList=new HashMap<>();
-        id=new ArrayList<>();
+        id=new ArrayList<String>();
 
         recyclerView=findViewById(R.id.interestedRecycler);
 
@@ -71,126 +71,56 @@ Story_model model;
 
         db = FirebaseDatabase.getInstance();
             model=new Story_model();
-        reff = db.getReference().child("Joined");
+        reference=db.getReference().child("User");
+        reff = db.getReference().child("Joined_Events");
 
-
-        Query query=reff.orderByChild("storyKey").equalTo(storyKey);
-        query.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.w(TAG, "DAtasnapshot==>" + dataSnapshot + "");
-                for(DataSnapshot ds:dataSnapshot.getChildren()){
-                    Log.w(TAG, "ds==>" + ds + "");
-                    id.add((String) ds.child("UID").getValue());
-
-                }
-
-
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-      /*  reff.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                for(DataSnapshot dataSnapshot1:dataSnapshot.getChildren()){
-
-                Log.w(TAG,"Model=>"+model);
-                fetch_category_wise(model.getUID());
-                gerUserData(model.getUID());
-                }}
-
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-
-
-*/
+        fetch();
     }
 
-
-    private void getUserData(String userID) {
-        final DatabaseReference database = FirebaseDatabase.getInstance().getReference("User").child(userID);
-        database.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-
-
-                Log.w(TAG, "DATASNAPsHOT-->>" + dataSnapshot);
-
-                if (dataSnapshot.child("name").getValue() != null) {
-                    userName = dataSnapshot.child("name").getValue().toString();
-                    image=dataSnapshot.child("profilePic_url").getValue().toString();
-                }
-                Log.w(TAG, "UserName--" + userName);
-            }
-
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
-    }
-
-
-
-
-    public void fetch_category_wise(String userId) {
+    public void fetch() {
         user_model = new User_model();
+        Log.w(TAG, "FetchFunction==>");
 
-        DatabaseReference database = FirebaseDatabase.getInstance().getReference();
-        Query query = database.child("User").orderByChild("uid").equalTo(userId);
-
-        FirebaseRecyclerOptions<User_model> options = new FirebaseRecyclerOptions.Builder<User_model>()
-                .setQuery(query, User_model.class)
-                .build();
-            adapter = new FirebaseRecyclerAdapter<User_model, ViewHolder>(options) {
-            @NonNull
+        reff.orderByChild("storyKey").equalTo(storyKey).addValueEventListener(new ValueEventListener() {
             @Override
-            public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-                View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.cardview, parent, false);
-                return new ViewHolder(view);
+            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                Log.w(TAG,"Ddatasnapshot=>"+dataSnapshot);
+                for(DataSnapshot ds:dataSnapshot.getChildren()){
+
+                id.add(ds.child("UID").getValue(String.class));
+
+                Log.w(TAG,"ID-=>"+id);
+                }
             }
 
             @Override
-            protected void onBindViewHolder(@NonNull Interested_list.ViewHolder holder, final int position, @NonNull final User_model model) {
-                holder.setUsername(model.getName());
-
-
-                holder.setUsername(model.getProfileUrl());
-                holder.root.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        Intent intent=new Intent(Interested_list.this,UserProfile.class);
-
-
-                        intent.putExtra("uid", model.getUid());
-
-                        intent.putExtra("image",model.getPhoto_url());
-                        startActivity(intent);                    }
-                });
-
-
+            public void onCancelled(@NonNull DatabaseError databaseError) {
 
             }
+        });
 
+        for(int i=0;i<id.size();i++){
+            Log.w(TAG,"ID"+i+"=>"+id.get(i));
 
-        };
-        recyclerView.setAdapter(adapter);
-        adapter.startListening();
+            reference.orderByChild("uid").equalTo(id.get(i)).addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Log.w(TAG,"USER__Ddatasnapshot=>"+dataSnapshot);
 
+                    user_model=dataSnapshot.getValue(User_model.class);
+                    Log.w(TAG,"User_Model=>"+user_model);
 
+                }
 
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
+                }
+            });
+        }
+        Log.w(TAG,"User_Model__outside=>"+user_model);
     }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
         public LinearLayout root;
         public TextView username;
@@ -200,7 +130,7 @@ Story_model model;
             super(itemView);
             root = itemView.findViewById(R.id.root);
             username = itemView.findViewById(R.id.eventName);
-                        userImage=itemView.findViewById(R.id.event_img);
+            userImage=itemView.findViewById(R.id.event_img);
 
         }
 
@@ -227,39 +157,14 @@ Story_model model;
     @Override
     protected void onStart() {
         super.onStart();
-    //
-    }
+         }
 
     @Override
     protected void onStop() {
         super.onStop();
-       // adapter.stopListening();
+
     }
 
 
-    public class Joined_Events {
-        String UID;
-
-        public String getUID() {
-            return UID;
-        }
-
-        public void setUID(String UID) {
-            this.UID = UID;
-        }
-
-        public String getStoryKey() {
-            return storyKey;
-        }
-
-        public void setStoryKey(String storyKey) {
-            this.storyKey = storyKey;
-        }
-
-
-
-
-        String storyKey;
-    }
 
 }

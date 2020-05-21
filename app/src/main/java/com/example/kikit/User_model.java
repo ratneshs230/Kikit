@@ -10,27 +10,19 @@ public class User_model {
     String uid;
     String description;
     String User_key;
-    String profileUrl;
+    String storyKey;
+    Uri photo_url;
 
-    public String getProfileUrl() {
-        return profileUrl;
+
+    public String getStoryKey() {
+        return storyKey;
     }
 
-    public void setProfileUrl(String profileUrl) {
-        this.profileUrl = profileUrl;
+    public void setStoryKey(String storyKey) {
+        this.storyKey = storyKey;
     }
 
-    public User_model(String name, String email, String password, String uid, String description, String user_key, String profileUrl, Uri photo_url, String joins) {
-        Name = name;
-        Email = email;
-        Password = password;
-        this.uid = uid;
-        this.description = description;
-        User_key = user_key;
-        this.profileUrl = profileUrl;
-        this.photo_url = photo_url;
-        this.joins = joins;
-    }
+
 
     public String getUser_key() {
         return User_key;
@@ -40,16 +32,7 @@ public class User_model {
         User_key = user_key;
     }
 
-    public User_model(String name, String email, String password, String uid, String description, String user_key, Uri photo_url, String joins) {
-        Name = name;
-        Email = email;
-        Password = password;
-        this.uid = uid;
-        this.description = description;
-        User_key = user_key;
-        this.photo_url = photo_url;
-        this.joins = joins;
-    }
+
 
     public String getDescription() {
         return description;
@@ -59,41 +42,10 @@ public class User_model {
         this.description = description;
     }
 
-    public User_model(String name, String email, String password, String uid, String description, Uri photo_url, String joins) {
-        Name = name;
-        Email = email;
-        Password = password;
-        this.uid = uid;
-        this.description = description;
-        this.photo_url = photo_url;
-        this.joins = joins;
-    }
 
-    Uri photo_url;
 
-    public User_model(String name, String email, String password, String uid) {
-        Name = name;
-        Email = email;
-        Password = password;
-        this.uid = uid;
-    }
 
-    public User_model(String name, String email, String password, String uid, Uri photo_url) {
-        Name = name;
-        Email = email;
-        Password = password;
-        this.uid = uid;
-        this.photo_url = photo_url;
-    }
 
-    public User_model(String name, String email, String password, String uid, Uri photo_url, String joins) {
-        Name = name;
-        Email = email;
-        Password = password;
-        this.uid = uid;
-        this.photo_url = photo_url;
-        this.joins = joins;
-    }
 
     public User_model() {
     }

@@ -67,7 +67,7 @@ FirebaseAuth mAuth;
             protected void onBindViewHolder(@NonNull ViewHolder holder, final int position, @NonNull final User_model model) {
 
                 holder.setEventname(model.getName());
-                 holder.setEvent_img(model.getProfileUrl());
+                 holder.setEvent_img(model.getPhoto_url().toString());
                 holder.root.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

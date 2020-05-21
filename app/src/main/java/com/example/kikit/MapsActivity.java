@@ -39,7 +39,7 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
     private GoogleMap mMap;
     FirebaseDatabase firebaseDatabase;
-    DatabaseReference reff;
+    DatabaseReference reff,myreff;
     private LocationManager locationManager;
     private LocationListener locationListener;
     private final long MIN_TIME = 1000;
@@ -55,6 +55,9 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
     FusedLocationProviderClient fusedLocationProviderClient;
     private static final int REQUEST_CODE = 101;
     LatLng latLng;
+    String myId;
+    final Double[] longitude = new Double[1];
+    final Double[] latitude = new Double[1];
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -70,64 +73,70 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
                     .findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
             mAuth = FirebaseAuth.getInstance();
+            myId=mAuth.getCurrentUser().getUid();
             locationModel = new LocationModel();
-             firebaseDatabase = FirebaseDatabase.getInstance();
-
-            reff = firebaseDatabase.getReference("User").child(uid);
+           firebaseDatabase = FirebaseDatabase.getInstance();
+            myreff=firebaseDatabase.getReference("User").child(myId);
+            reff = firebaseDatabase.getReference("User").child(uid).child("Location");
 
 
 
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
+            fusedLocationProviderClient.getLastLocation()
+                    .addOnSuccessListener(new OnSuccessListener<Location>() {
+                        @Override
+                        public void onSuccess(Location location) {
+                            if (location != null) {
+                                currentLocation = location;
+                                latitude[0] = location.getLatitude();
+                                longitude[0] = location.getLongitude();
+                                Map<String,Double> DBlocation=new HashMap<>();
+                                DBlocation.put("Latitude", latitude[0]);
+                                DBlocation.put("Longitude", longitude[0]);
+                                Log.w(TAG, "Location=>" + latitude[0] + "/" + longitude[0]);
+                                myreff.child("Location").setValue(DBlocation);
+                            }
+                        }
+                    }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Log.w(TAG,"FAIled to read last location ");
+                }
+            });
         saveOnDB();
         }catch (Exception e){
             e.printStackTrace();
         }
     }
     private void saveOnDB(){
-        final Double[] longitude = new Double[1];
-        final Double[] latitude = new Double[1];
-        fusedLocationProviderClient.getLastLocation()
-                .addOnSuccessListener(new OnSuccessListener<Location>() {
-                    @Override
-                    public void onSuccess(Location location) {
-                        if (location != null) {
-                            currentLocation = location;
-                            latitude[0] = location.getLatitude();
-                            longitude[0] = location.getLongitude();
-                            Map<String,Double> DBlocation=new HashMap<>();
-                            DBlocation.put("Latitude", latitude[0]);
-                            DBlocation.put("Longitude", longitude[0]);
-                            Log.w(TAG, "Location=>" + latitude[0] + "/" + longitude[0]);
-                            reff.child("Location").setValue(DBlocation);
-                        }
-                    }
-                }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Log.w(TAG,"FAIled to read last location ");
-            }
-        });
+
+
 
     }
     private void fetchLocation() {
-        reff.addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            locationModel=dataSnapshot.child("Location").getValue(LocationModel.class);
 
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError databaseError) {
-
-            }
-        });
 
     }
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        final LatLng latlng;
 try{
-    fetchLocation();
+    locationModel=new LocationModel();
+    reff.addValueEventListener(new ValueEventListener() {
+        @Override
+        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+            //locationModel=dataSnapshot.getValue(LocationModel.class);
+
+            Log.w(TAG,"LocationModel=>"+dataSnapshot);
+            //Log.w(TAG,"LocationModel=>"+locationModel);
+             latLng = new LatLng((double)dataSnapshot.child("Location").child("Latitude").getValue(), (double)dataSnapshot.child("Location").child("Longitude").getValue());
+        }
+
+        @Override
+        public void onCancelled(@NonNull DatabaseError databaseError) {
+
+        }
+    });
 
         if (ActivityCompat.checkSelfPermission(
                 this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
@@ -135,7 +144,7 @@ try{
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
             return;
         }
-    LatLng latLng = new LatLng(locationModel.getLatitude(), locationModel.getLongitude());
+
     MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("I am here!");
     googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
     googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 5));

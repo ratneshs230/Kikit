@@ -79,7 +79,7 @@ public class UserProfile extends AppCompatActivity  {
 
                     if (dataSnapshot.child("name").getValue() != null) {
                         name = dataSnapshot.child("name").getValue().toString();
-                        image = dataSnapshot.child("profilePic_url").getValue().toString();
+                        image = dataSnapshot.child("photo_url").getValue().toString();
                         userName.setText(name);
                         Picasso.get().load(image).into(profile_pic);
                     }
