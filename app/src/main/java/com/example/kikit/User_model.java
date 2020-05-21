@@ -14,6 +14,9 @@ public class User_model {
     Uri photo_url;
 
 
+    String name, email, password, user_key;
+
+
     public String getStoryKey() {
         return storyKey;
     }
@@ -21,7 +24,6 @@ public class User_model {
     public void setStoryKey(String storyKey) {
         this.storyKey = storyKey;
     }
-
 
 
     public String getUser_key() {
@@ -33,7 +35,6 @@ public class User_model {
     }
 
 
-
     public String getDescription() {
         return description;
     }
@@ -41,10 +42,6 @@ public class User_model {
     public void setDescription(String description) {
         this.description = description;
     }
-
-
-
-
 
 
     public User_model() {

@@ -34,135 +34,133 @@ import com.google.firebase.storage.UploadTask;
 
 public class
 Register extends AppCompatActivity implements OnClickListener {
-        EditText name, email,password;
-        Button register_btn;
-        FirebaseAuth mAuth;
-        FirebaseDatabase db;
-        DatabaseReference reff;
+    EditText name, email, password;
+    Button register_btn;
+    FirebaseAuth mAuth;
+    FirebaseDatabase db;
+    DatabaseReference reff;
     FirebaseUser user;
     TextView loginHere;
 
-    String mailId, pass,Name,pushKey;
+    String mailId, pass, Name, pushKey;
     ImageView profilePic;
     User_model user_model;
-    String TAG="LOGIN_ACTIVITY";
+    String TAG = "LOGIN_ACTIVITY";
     StorageReference storageReference;
-    Boolean register_status=false;
+    Boolean register_status = false;
     Uri imageUri;
     Uri photoUrl;
+
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        try{
-            if(requestCode==1000){
-                if(resultCode== Activity.RESULT_OK){
-                    imageUri=data.getData();
+        try {
+            if (requestCode == 1000) {
+                if (resultCode == Activity.RESULT_OK) {
+                    imageUri = data.getData();
                     profilePic.setImageURI(imageUri);
-                    Log.w(TAG,"OnSelectionImgUrl=>"+imageUri);
+                    Log.w(TAG, "OnSelectionImgUrl=>" + imageUri);
 
+                }
             }
-        }}
-        catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
     @Override
-        protected void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            setContentView(R.layout.activity_register);
-                try {
-                 name = findViewById(R.id.name);
-                    email = findViewById(R.id.email);
-                    password = findViewById(R.id.pass);
-                    profilePic = findViewById(R.id.profile_pic);
-                    register_btn = findViewById(R.id.register_btn);
-                loginHere=findViewById(R.id.loginhere);
-                    mAuth = FirebaseAuth.getInstance();
-                    user_model = new User_model();
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_register);
+        try {
+            name = findViewById(R.id.name);
+            email = findViewById(R.id.email);
+            password = findViewById(R.id.pass);
+            profilePic = findViewById(R.id.profile_pic);
+            register_btn = findViewById(R.id.register_btn);
+            loginHere = findViewById(R.id.loginhere);
+            mAuth = FirebaseAuth.getInstance();
+            user_model = new User_model();
 
-                    storageReference = FirebaseStorage.getInstance().getReference();
+            storageReference = FirebaseStorage.getInstance().getReference();
 
-                    loginHere.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            Intent intent=new Intent(Register.this,Login.class);
-                            startActivity(intent);
-                        }
-                    });
+            loginHere.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    Intent intent = new Intent(Register.this, Login.class);
+                    startActivity(intent);
+                }
+            });
 
-                    register_btn.setOnClickListener(new OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            mailId = email.getText().toString();
-                            pass = password.getText().toString();
-                            Name = name.getText().toString();
-                            Log.w(TAG, "email_RegisterImgUrl=>" + imageUri);
+            register_btn.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mailId = email.getText().toString();
+                    pass = password.getText().toString();
+                    Name = name.getText().toString();
+                    Log.w(TAG, "email_RegisterImgUrl=>" + imageUri);
 
-                            if (Name.isEmpty()) {
-                                name.setError("Please Enter Username");
-                            } else if (pass.isEmpty()) {
-                                password.setError("Password Required");
-                            } else if (mailId.isEmpty()) {
-                                email.setError("Mail Id Required");
-                            } else
-                                email_Register();
+                    if (Name.isEmpty()) {
+                        name.setError("Please Enter Username");
+                    } else if (pass.isEmpty()) {
+                        password.setError("Password Required");
+                    } else if (mailId.isEmpty()) {
+                        email.setError("Mail Id Required");
+                    } else
+                        email_Register();
 
-                        }
-                    });
+                }
+            });
 
-                    profilePic.setOnClickListener(this);
-
-
+            profilePic.setOnClickListener(this);
 
 
-                }catch (Exception e){
-                e.printStackTrace();
-            }
-                    }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 
 
-        private void email_Register() {
-                    try {
-                        final String[] uid = new String[1];
-                        mAuth.createUserWithEmailAndPassword(mailId, pass).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
-                            @Override
-                            public void onComplete(@NonNull Task<AuthResult> task) {
-                                if (task.isSuccessful()) {
+    private void email_Register() {
+        try {
+            final String[] uid = new String[1];
+            mAuth.createUserWithEmailAndPassword(mailId, pass).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
+                @Override
+                public void onComplete(@NonNull Task<AuthResult> task) {
+                    if (task.isSuccessful()) {
 
-                                    Log.d(TAG, "User Creation Successful");
+                        Log.d(TAG, "User Creation Successful");
 
-                                    try {
-                                        user = FirebaseAuth.getInstance().getCurrentUser();
-                                        uid[0] = user.getUid();
+                        try {
+                            user = FirebaseAuth.getInstance().getCurrentUser();
+                            uid[0] = user.getUid();
 
 
+                            if (Name != null && mailId != null && pass != null && uid[0] != null && imageUri != null && user != null) {
+                                user_data_save(Name, mailId, pass, uid[0], imageUri, user);
+                                register_status = true;
 
-                                        if (Name != null && mailId != null && pass != null && uid[0] != null && imageUri != null && user != null) {
-                                            user_data_save(Name, mailId, pass, uid[0], imageUri, user);
-                                            register_status = true;
-
-                                        } else {
-                                            Toast.makeText(getApplicationContext(), "Please enter all entities including Image", Toast.LENGTH_LONG).show();
-                                        }
-
-                                    } catch (Exception e) {
-                                        Log.w(TAG, "Exception in user=>" + e);
-                                    }
-
-                                } else {
-
-                                    Log.w(TAG, "signInWithEmail:failure", task.getException());
-                                    Toast.makeText(Register.this, "Authentication failed.",
-                                            Toast.LENGTH_SHORT).show();
-                                }
+                            } else {
+                                Toast.makeText(getApplicationContext(), "Please enter all entities including Image", Toast.LENGTH_LONG).show();
                             }
-                        });
-                    }catch(Exception e){
-                        e.printStackTrace();
+
+                        } catch (Exception e) {
+                            Log.w(TAG, "Exception in user=>" + e);
+                        }
+
+                    } else {
+
+                        Log.w(TAG, "signInWithEmail:failure", task.getException());
+                        Toast.makeText(Register.this, "Authentication failed.",
+                                Toast.LENGTH_SHORT).show();
                     }
-                            }
+                }
+            });
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
         /*
 private void setUserProfileImage(Uri uri){
     try{
@@ -189,90 +187,83 @@ private void setUserProfileImage(Uri uri){
 
 
     private void user_data_save(String name, String email, final String password, final String uid, Uri image, FirebaseUser user) {
-       try{
-        final StorageReference fileref = storageReference.child("profile Images").child(uid);
-        db = FirebaseDatabase.getInstance();
-        reff = db.getReference().child("User");
-        DatabaseReference reference;
-        reference = reff.child(uid);
-        pushKey=reference.getKey();
-        user_model.setUser_key(pushKey);
+        try {
+            final StorageReference fileref = storageReference.child("profile Images").child(uid);
+            db = FirebaseDatabase.getInstance();
+            reff = db.getReference().child("User");
+            DatabaseReference reference;
+            reference = reff.child(uid);
+            pushKey = reference.getKey();
+            user_model.setUser_key(pushKey);
 
-           UserProfileChangeRequest request=new UserProfileChangeRequest.Builder()
-                   .setPhotoUri(image)
-                   .setDisplayName(name)
-                   .build();
-           user.updateProfile(request).addOnSuccessListener(new OnSuccessListener<Void>() {
-               @Override
-               public void onSuccess(Void aVoid) {
-                   Toast.makeText(Register.this,"Profile Updated.",Toast.LENGTH_LONG).show();
-               }
-           }).addOnFailureListener(new OnFailureListener() {
-               @Override
-               public void onFailure(@NonNull Exception e) {
-                   Toast.makeText(Register.this, "Profile image failed to download", Toast.LENGTH_SHORT).show();
-               }
-           });
+            UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
+                    .setPhotoUri(image)
+                    .setDisplayName(name)
+                    .build();
+            user.updateProfile(request).addOnSuccessListener(new OnSuccessListener<Void>() {
+                @Override
+                public void onSuccess(Void aVoid) {
+                    Toast.makeText(Register.this, "Profile Updated.", Toast.LENGTH_LONG).show();
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(Register.this, "Profile image failed to download", Toast.LENGTH_SHORT).show();
+                }
+            });
 
-        fileref.putFile(image).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                Log.w(TAG,"image Uploaded Successfully");
-                Task<Uri> downloadUri=taskSnapshot.getStorage().getDownloadUrl();
-                downloadUri.addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        String path=uri.toString();
-                        reff.child(uid).child("photo_url").setValue(path);
-                        user_model.setPhoto_url(uri);
-                    }
+            fileref.putFile(image).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                @Override
+                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                    Log.w(TAG, "image Uploaded Successfully");
+                    Task<Uri> downloadUri = taskSnapshot.getStorage().getDownloadUrl();
+                    downloadUri.addOnSuccessListener(new OnSuccessListener<Uri>() {
+                        @Override
+                        public void onSuccess(Uri uri) {
+                            String path = uri.toString();
+                            reff.child(uid).child("photo_url").setValue(path);
+                            user_model.setPhoto_url(uri);
+                        }
 
-                });
-
-
+                    });
 
 
+                }
+            }).addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                    Toast.makeText(Register.this, "Error Uploading File", Toast.LENGTH_LONG).show();
+                }
+            });
 
-            }
-        }).addOnFailureListener(new OnFailureListener() {
-            @Override
-            public void onFailure(@NonNull Exception e) {
-                Toast.makeText(Register.this,"Error Uploading File",Toast.LENGTH_LONG).show();
-            }
-        });
-
-        user_model.setName(name);
-        user_model.setEmail(mailId);
-        user_model.setPassword(password);
-        user_model.setUid(uid);
-
+            user_model.setName(name);
+            user_model.setEmail(mailId);
+            user_model.setPassword(password);
+            user_model.setUid(uid);
 
 
+            reference.setValue(user_model);
 
-        reference.setValue(user_model);
 
+            Intent intent = new Intent(Register.this, Homepage.class);
+            intent.putExtra("UID", uid);
 
-        Intent intent = new Intent(Register.this, Homepage.class);
-        intent.putExtra("UID", uid);
-
-        startActivity(intent);
-       }
-       catch (Exception e)
-       {
-           e.printStackTrace();
-       }
+            startActivity(intent);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
     public void onClick(View v) {
 
-        switch(v.getId()) {
+        switch (v.getId()) {
             case R.id.profile_pic: {
 
                 Intent openGallery = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(openGallery, 1000);
                 break;
-                    }
+            }
         }
 
     }

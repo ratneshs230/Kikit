@@ -51,8 +51,8 @@ public class Login extends AppCompatActivity implements View.OnClickListener {
     public void onClick(View v) {
         switch (v.getId()) {
             case R.id.login_btn:{
-                mailId = email.getText().toString();
-                pass = password.getText().toString();
+                mailId = email.getText().toString().trim();
+                pass = password.getText().toString().trim();
                 mAuth.signInWithEmailAndPassword(mailId,pass).addOnCompleteListener(this, new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
