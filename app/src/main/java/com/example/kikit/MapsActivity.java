@@ -12,6 +12,8 @@ import android.location.LocationListener;
 import android.location.LocationManager;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -26,6 +28,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
@@ -37,27 +40,25 @@ import java.util.Map;
 
 public class MapsActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    private GoogleMap mMap;
+
     FirebaseDatabase firebaseDatabase;
-    DatabaseReference reff,myreff;
-    private LocationManager locationManager;
-    private LocationListener locationListener;
+    DatabaseReference location_reference,myreff;
+
     private final long MIN_TIME = 1000;
     private final long MIN_DIST = 5;
-    String locationKey;
-    DatabaseReference locationReff;
     String TAG="MapsActivity";
     FirebaseAuth mAuth;
-    private Double Maplongitude, Maplatitude;
-    String uid;
-    LocationModel locationModel;
-    Location currentLocation;
-    FusedLocationProviderClient fusedLocationProviderClient;
-    private static final int REQUEST_CODE = 101;
-    LatLng latLng;
+    String uid,Name;
+
     String myId;
-    final Double[] longitude = new Double[1];
-    final Double[] latitude = new Double[1];
+    FirebaseUser user;
+    Button share;
+    Location_Model location_model;
+     LatLng latlng;
+    private GoogleMap mMap;
+
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,129 +69,91 @@ public class MapsActivity extends FragmentActivity implements OnMapReadyCallback
 
             Intent i=getIntent();
             uid=i.getStringExtra("UID");
+            Name=i.getStringExtra("Name");
+
 
             SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
                     .findFragmentById(R.id.map);
             mapFragment.getMapAsync(this);
+
             mAuth = FirebaseAuth.getInstance();
-            myId=mAuth.getCurrentUser().getUid();
-            locationModel = new LocationModel();
-           firebaseDatabase = FirebaseDatabase.getInstance();
+            user=mAuth.getCurrentUser();
+            if(user!=null){
+                myId=user.getUid();
+                Log.w(TAG,"MYUID=>"+myId);
+            }
+            else{
+                Log.w(TAG,"Logged OUT");
+            }
+
+
+            location_model=new Location_Model();
+
+
+            firebaseDatabase = FirebaseDatabase.getInstance();
             myreff=firebaseDatabase.getReference("User").child(myId);
-            reff = firebaseDatabase.getReference("User").child(uid).child("Location");
+            location_reference = firebaseDatabase.getReference().child("User").child(uid).child("Location_Data");
 
-
-
-        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
-            fusedLocationProviderClient.getLastLocation()
-                    .addOnSuccessListener(new OnSuccessListener<Location>() {
-                        @Override
-                        public void onSuccess(Location location) {
-                            if (location != null) {
-                                currentLocation = location;
-                                latitude[0] = location.getLatitude();
-                                longitude[0] = location.getLongitude();
-                                Map<String,Double> DBlocation=new HashMap<>();
-                                DBlocation.put("Latitude", latitude[0]);
-                                DBlocation.put("Longitude", longitude[0]);
-                                Log.w(TAG, "Location=>" + latitude[0] + "/" + longitude[0]);
-                                myreff.child("Location").setValue(DBlocation);
-                            }
-                        }
-                    }).addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    Log.w(TAG,"FAIled to read last location ");
-                }
-            });
-        saveOnDB();
-        }catch (Exception e){
+   }catch (Exception e){
             e.printStackTrace();
         }
     }
-    private void saveOnDB(){
 
+
+
+    @Override
+    protected void onStart() {
+        super.onStart();
 
 
     }
-    private void fetchLocation() {
 
-
+    @Override
+    protected void onStop() {
+        super.onStop();
     }
+
+
     @Override
     public void onMapReady(GoogleMap googleMap) {
-        final LatLng latlng;
-try{
-    locationModel=new LocationModel();
-    reff.addValueEventListener(new ValueEventListener() {
-        @Override
-        public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-            //locationModel=dataSnapshot.getValue(LocationModel.class);
+        try{
+            mMap=googleMap;
 
-            Log.w(TAG,"LocationModel=>"+dataSnapshot);
-            //Log.w(TAG,"LocationModel=>"+locationModel);
-             latLng = new LatLng((double)dataSnapshot.child("Location").child("Latitude").getValue(), (double)dataSnapshot.child("Location").child("Longitude").getValue());
-        }
+            location_reference.addValueEventListener(new ValueEventListener() {
+                @Override
+                public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+                    Log.w(TAG,"Location_Datasnapshot=>"+dataSnapshot);
+                    location_model=dataSnapshot.getValue(Location_Model.class);
+                    if(dataSnapshot.child("mLatitiude").getValue()!=null && dataSnapshot.child("mLongitude").getValue()!=null)
+                   latlng=new LatLng((Double) dataSnapshot.child("mLatitiude").getValue(),(Double)dataSnapshot.child("mLongitude").getValue());
+                    Log.w(TAG,"LATLNG=>"+latlng);
+                    Log.w(TAG,"Name=>"+Name);
 
-        @Override
-        public void onCancelled(@NonNull DatabaseError databaseError) {
 
-        }
-    });
+                    mMap.addMarker(new
+                            MarkerOptions().position(latlng).title(Name));
+                    mMap.moveCamera(CameraUpdateFactory.newLatLng(latlng));
+                    mMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latlng,11));
+                }
 
-        if (ActivityCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(
-                this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
-            return;
-        }
+                @Override
+                public void onCancelled(@NonNull DatabaseError databaseError) {
 
-    MarkerOptions markerOptions = new MarkerOptions().position(latLng).title("I am here!");
-    googleMap.animateCamera(CameraUpdateFactory.newLatLng(latLng));
-    googleMap.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 5));
-    googleMap.addMarker(markerOptions);
+                }
+            });
 
 
 
-                  // Toast.makeText(getApplicationContext(), currentLocation.getLatitude() + "" + currentLocation.getLongitude(), Toast.LENGTH_SHORT).show();
-                    SupportMapFragment supportMapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map);
-                    assert supportMapFragment != null;
-                    supportMapFragment.getMapAsync(MapsActivity.this);
+
+
+
+
 
 }
 catch (Exception e)
 {
     e.printStackTrace();
 }
-    }
-
-    public class LocationModel{
-        Double Latitude;
-        Double Longitude;
-
-        public Double getLatitude() {
-            return Latitude;
-        }
-
-        public void setLatitude(Double latitude) {
-            Latitude = latitude;
-        }
-
-        public Double getLongitude() {
-            return Longitude;
-        }
-
-        public void setLongitude(Double longitude) {
-            Longitude = longitude;
-        }
-
-        public LocationModel(Double latitude, Double longitude) {
-            Latitude = latitude;
-            Longitude = longitude;
-        }
-
-        public LocationModel() {
-        }
     }
 
 }

@@ -221,7 +221,7 @@ private void setUserProfileImage(Uri uri){
                         @Override
                         public void onSuccess(Uri uri) {
                             String path = uri.toString();
-                            reff.child(uid).child("photo_url").setValue(path);
+                            reff.child(uid).child("profilePic_string").setValue(path);
                             user_model.setPhoto_url(uri);
                         }
 

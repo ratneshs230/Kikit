@@ -48,7 +48,7 @@ public class Interested_list extends AppCompatActivity {
     LinearLayoutManager linearLayoutManager;
     User_model user_model;
     List<String> user_namesList ;
-    List<String> user_imageList;
+    List<String> user_imageList,uidList;
     RecyclerView.Adapter mAdapter;
     String userName, image;
     List<String> id;
@@ -67,7 +67,7 @@ public class Interested_list extends AppCompatActivity {
         id = new ArrayList<>();
         user_imageList= new ArrayList<>();
         user_namesList= new ArrayList<>();
-
+        uidList=new ArrayList<>();
         recyclerView = findViewById(R.id.interestedRecycler);
 
 
@@ -83,13 +83,13 @@ public class Interested_list extends AppCompatActivity {
         reff = db.getReference().child("Joined_Events");
 
         fetch();
-        for(int j=0;j<user_namesList.size();j++){
+      /*  for(int j=0;j<user_namesList.size();j++){
             Log.w(TAG, "FOR___UserNameList=>" + user_namesList.get(j));
             Log.w(TAG, "FOR___UserImageList=>" + user_namesList.get(j));
 
 
-        }
-        mAdapter=new Adapter_class(Interested_list.this,user_namesList,user_imageList);
+        }*/
+
 
         recyclerView.setAdapter(mAdapter);
 
@@ -104,8 +104,7 @@ public class Interested_list extends AppCompatActivity {
         reff.orderByChild("storyKey").equalTo(storyKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                Log.w(TAG, "Ddatasnapshot=>" + dataSnapshot);
-                for (DataSnapshot ds : dataSnapshot.getChildren()) {
+               for (DataSnapshot ds : dataSnapshot.getChildren()) {
 
                     id.add(ds.child("UID").getValue(String.class));
 
@@ -118,16 +117,15 @@ public class Interested_list extends AppCompatActivity {
                     reference.orderByChild("uid").equalTo(id.get(i)).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
-                            Log.w(TAG, "USER__Ddatasnapshot=>" + dataSnapshot);
 
                             //dataSnapshot.child("User").getValue(User_model.class);
                             //User_Firebase message = dataSnapshot.getValue(User_Firebase.class);
 
                             for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                                //user_model =ds.getValue(User_model.class);
+                               // user_model =ds.getValue(User_model.class);
                                 String name = (String) ds.child("name").getValue();
                                 String email = (String) ds.child("email").getValue();
-                                String photo_url = (String) ds.child("photo_url").getValue();
+                                String photo_url = (String) ds.child("profilePic_string").getValue();
                                 String uid = (String) ds.child("uid").getValue();
                                 String user_key = (String) ds.child("user_key").getValue();
                                 Log.w(TAG, "ID-=>" + id);
@@ -138,25 +136,18 @@ public class Interested_list extends AppCompatActivity {
                                 user_model.setUid(uid);
                                 user_model.setProfilePic_string(photo_url);
                                 user_model.setUser_key(user_key);
-                                Log.w(TAG, "User_Model__INside=>" + user_model.getName());
 
                             }
+                            uidList.add(user_model.getUid());
                             user_namesList.add(user_model.getName());
                             user_imageList.add(user_model.getProfilePic_string());//<---------------------PASS THISS LIST IN RECUCLER VIEW
-                            Log.w(TAG, "User_Model__outside=>" + user_model.getName());
-                            Log.w(TAG, "UserNameList=>" + user_namesList);
+                            Log.w(TAG, "FIrst___UserNameList=>" + user_namesList);
+                            showDAta(user_namesList,user_imageList,uidList);
 
-
-
-
-
-
-
-                        }
+                             }
 
                         @Override
                         public void onCancelled(@NonNull DatabaseError databaseError) {
-
                         }
                     });
                 }
@@ -174,10 +165,17 @@ public class Interested_list extends AppCompatActivity {
 
     }
 
+    private void showDAta(List<String> user_namesList, List<String> user_imageList,List<String> uidList) {
+        mAdapter=new Adapter_class(Interested_list.this,user_namesList,user_imageList,uidList);
+        recyclerView.setAdapter(mAdapter);
+    }
+
 
     @Override
     protected void onStart() {
         super.onStart();
+
+
 
     }
 

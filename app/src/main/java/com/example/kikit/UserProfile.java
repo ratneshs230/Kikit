@@ -58,6 +58,7 @@ public class UserProfile extends AppCompatActivity  {
                 public void onClick(View v) {
                     Intent intent = new Intent(UserProfile.this, MapsActivity.class);
                     intent.putExtra("UID", uid);
+                    intent.putExtra("Name",name);
                     startActivity(intent);
                 }
             });
@@ -79,7 +80,7 @@ public class UserProfile extends AppCompatActivity  {
 
                     if (dataSnapshot.child("name").getValue() != null) {
                         name = dataSnapshot.child("name").getValue().toString();
-                        image = dataSnapshot.child("photo_url").getValue().toString();
+                        image = dataSnapshot.child("profilePic_string").getValue().toString();
                         userName.setText(name);
                         Picasso.get().load(image).into(profile_pic);
                     }
