@@ -1,6 +1,7 @@
 package com.example.kikit;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -9,6 +10,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.content.Context;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -45,8 +47,9 @@ public class Interested_list extends AppCompatActivity {
     String TAG = "Interested";
     LinearLayoutManager linearLayoutManager;
     User_model user_model;
-    List<User_model> user_modelsList = new ArrayList<>();
-    private FirebaseRecyclerAdapter adapter;
+    List<String> user_namesList ;
+    List<String> user_imageList;
+    RecyclerView.Adapter mAdapter;
     String userName, image;
     List<String> id;
     Story_model model;
@@ -61,7 +64,9 @@ public class Interested_list extends AppCompatActivity {
         Log.w(TAG, "storykey==>" + storyKey + "");
 
         interestedList = new HashMap<>();
-        id = new ArrayList<String>();
+        id = new ArrayList<>();
+        user_imageList= new ArrayList<>();
+        user_namesList= new ArrayList<>();
 
         recyclerView = findViewById(R.id.interestedRecycler);
 
@@ -71,18 +76,31 @@ public class Interested_list extends AppCompatActivity {
         recyclerView.setHasFixedSize(true);
 
 
+
         db = FirebaseDatabase.getInstance();
         model = new Story_model();
         reference = db.getReference().child("User");
         reff = db.getReference().child("Joined_Events");
 
         fetch();
+        for(int j=0;j<user_namesList.size();j++){
+            Log.w(TAG, "FOR___UserNameList=>" + user_namesList.get(j));
+            Log.w(TAG, "FOR___UserImageList=>" + user_namesList.get(j));
+
+
+        }
+        mAdapter=new Adapter_class(Interested_list.this,user_namesList,user_imageList);
+
+        recyclerView.setAdapter(mAdapter);
+
+
     }
 
     public void fetch() {
         user_model = new User_model();
-        Log.w(TAG, "FetchFunction==>");
 
+        Log.w(TAG, "FetchFunction==>");
+        user_model = new User_model();
         reff.orderByChild("storyKey").equalTo(storyKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -97,7 +115,6 @@ public class Interested_list extends AppCompatActivity {
                 for (int i = 0; i < id.size(); i++) {
                     Log.w(TAG, "ID" + i + "=>" + id.get(i));
 
-                    final int finalI = i;
                     reference.orderByChild("uid").equalTo(id.get(i)).addValueEventListener(new ValueEventListener() {
                         @Override
                         public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
@@ -107,7 +124,7 @@ public class Interested_list extends AppCompatActivity {
                             //User_Firebase message = dataSnapshot.getValue(User_Firebase.class);
 
                             for (DataSnapshot ds : dataSnapshot.getChildren()) {
-                                //user_model =(User_model) ds.getValue();
+                                //user_model =ds.getValue(User_model.class);
                                 String name = (String) ds.child("name").getValue();
                                 String email = (String) ds.child("email").getValue();
                                 String photo_url = (String) ds.child("photo_url").getValue();
@@ -115,16 +132,25 @@ public class Interested_list extends AppCompatActivity {
                                 String user_key = (String) ds.child("user_key").getValue();
                                 Log.w(TAG, "ID-=>" + id);
 
-                                User_model user_model = new User_model();
+
                                 user_model.setName(name);
                                 user_model.setEmail(email);
                                 user_model.setUid(uid);
-                                // user_model.setPhoto_url();
+                                user_model.setProfilePic_string(photo_url);
                                 user_model.setUser_key(user_key);
-                                user_modelsList.add(user_model);//<---------------------PASS THISS LIST IN RECUCLER VIEW
+                                Log.w(TAG, "User_Model__INside=>" + user_model.getName());
+
                             }
-                            // user_model = dataSnapshot.getValue(User_model.class);
-                            Log.w(TAG, "User_Model=>" + user_model);
+                            user_namesList.add(user_model.getName());
+                            user_imageList.add(user_model.getProfilePic_string());//<---------------------PASS THISS LIST IN RECUCLER VIEW
+                            Log.w(TAG, "User_Model__outside=>" + user_model.getName());
+                            Log.w(TAG, "UserNameList=>" + user_namesList);
+
+
+
+
+
+
 
                         }
 
@@ -145,46 +171,14 @@ public class Interested_list extends AppCompatActivity {
         });
 
 
-        Log.w(TAG, "User_Model__outside=>" + user_model);
-    }
-
-    public class ViewHolder extends RecyclerView.ViewHolder {
-        public LinearLayout root;
-        public TextView username;
-        public ImageView userImage;
-
-        public ViewHolder(@NonNull View itemView) {
-            super(itemView);
-            root = itemView.findViewById(R.id.root);
-            username = itemView.findViewById(R.id.eventName);
-            userImage = itemView.findViewById(R.id.event_img);
-
-        }
-
-        public LinearLayout getRoot() {
-            return root;
-        }
-
-        public void setRoot(LinearLayout root) {
-            this.root = root;
-        }
-
-
-        public void setUsername(String string) {
-            username.setText(string);
-        }
-
-        public void setUserImage(String image) {
-
-            Picasso.get().load(image).into(userImage);
-        }
-
 
     }
+
 
     @Override
     protected void onStart() {
         super.onStart();
+
     }
 
     @Override

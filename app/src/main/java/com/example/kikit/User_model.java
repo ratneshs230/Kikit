@@ -12,7 +12,15 @@ public class User_model {
     String User_key;
     String storyKey;
     Uri photo_url;
+    String profilePic_string;
 
+    public String getProfilePic_string() {
+        return profilePic_string;
+    }
+
+    public void setProfilePic_string(String profilePic_string) {
+        this.profilePic_string = profilePic_string;
+    }
 
     String name, email, password, user_key;
 
