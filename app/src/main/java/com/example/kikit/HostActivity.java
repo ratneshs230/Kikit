@@ -3,6 +3,7 @@ package com.example.kikit;
 import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
@@ -86,6 +87,8 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
             reference = reff.push();
             pushKey = reference.getKey();
             story.setStory_key(pushKey);
+
+
 
 
             progress=findViewById(R.id.progressBar);
@@ -177,6 +180,10 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
 
 
     public void store_data() {
+        SharedPreferences pref=getSharedPreferences("Event_preference",MODE_PRIVATE);;
+        final SharedPreferences.Editor editor=pref.edit();
+
+
         intent = new Intent(HostActivity.this, StoryDisplay.class);
 
         final String store_title = host_title.getText().toString();
@@ -210,6 +217,7 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
 
                                 intent.putExtra("image", path[0]);
 
+                                editor.putString("Image",path[0]);
 
                                 reference.updateChildren(imageObject);
 
@@ -234,10 +242,15 @@ public class HostActivity extends AppCompatActivity implements AdapterView.OnIte
                 story.setUID(uid);
                 story.setStory_key(pushKey);
                 reference.setValue(story);
+                editor.putString("Name",store_title);
+                editor.putString("Desc",store_desc);
+                editor.putString("Date",store_Date);
+                editor.putString("Host",userName);
+                editor.apply();
 
 
                 Toast.makeText(HostActivity.this, "Event Hosted Successfully", Toast.LENGTH_LONG).show();
-
+            intent.putExtra("From","host");
                 intent.putExtra("StoryKey",pushKey);
                 intent.putExtra("UID", uid);
 

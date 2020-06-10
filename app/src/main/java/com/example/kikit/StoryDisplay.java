@@ -2,6 +2,7 @@ package com.example.kikit;
 
 import android.Manifest;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationListener;
@@ -47,7 +48,7 @@ public class StoryDisplay extends AppCompatActivity {
     String storyKey;
     FirebaseAuth mAuth;
 
-    String current_user, uid;
+    String current_user, uid,from;
     ImageView display_storyImage;
     Uri image;
     Story_model story;
@@ -64,11 +65,11 @@ public class StoryDisplay extends AppCompatActivity {
         setContentView(R.layout.activity_story_display);
         try {
             Intent i = getIntent();
-
-
-            uid = i.getStringExtra("uid");
+            from=i.getStringExtra("From");
             storyKey = i.getStringExtra("StoryKey");
-            Log.w(TAG, "Story_key+UID" + storyKey + "<<-->>");
+            SharedPreferences no_pref=getSharedPreferences("Event_preference",MODE_PRIVATE);
+            uid=no_pref.getString("Uid","");
+            Log.w(TAG, "Story_key+UID" + storyKey + "<<-->>"+uid);
 
 
             joinedObject = new HashMap<>();
@@ -84,8 +85,6 @@ public class StoryDisplay extends AppCompatActivity {
             display_storyImage = findViewById(R.id.display_storyImage);
             join = findViewById(R.id.join);
             coordinatorLayout=findViewById(R.id.coordinator_layout);
-
-
             db = FirebaseDatabase.getInstance();
 
             story = new Story_model();
@@ -93,13 +92,10 @@ public class StoryDisplay extends AppCompatActivity {
             location_reference = db.getReference().child("User").child(uid).child("Location_Data");
 
             joinedReference = db.getReference().child("Joined_Events");
-            reference = reff.child(storyKey);
 
+                fetch_story(storyKey);
 
-            fetch_story();
-
-
-            coming.setOnClickListener(new View.OnClickListener() {
+                    coming.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     Intent intent = new Intent(StoryDisplay.this, Interested_list.class);
@@ -149,9 +145,9 @@ public class StoryDisplay extends AppCompatActivity {
         snackbar.show();
     }
 
-    public void fetch_story() {
-        Log.w(TAG, "Fetch FUnction");
-        reference.addValueEventListener(new ValueEventListener() {
+    public void fetch_story(String storyKey) {
+        Log.w(TAG, "Fetch FUnction"+storyKey);
+        reff.child(storyKey).addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
                 Log.w(TAG, "DATASNAPsHOT-->>" + dataSnapshot);

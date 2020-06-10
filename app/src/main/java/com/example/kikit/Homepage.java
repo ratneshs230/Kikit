@@ -1,6 +1,7 @@
 package com.example.kikit;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -51,7 +52,10 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
             Intent i = getIntent();
             uid = i.getStringExtra("UID");
             Log.w(TAG, "UID RECIEVED-=>" + uid);
-
+            SharedPreferences kikit_pref=getSharedPreferences("Event_preference",MODE_PRIVATE);;
+            SharedPreferences.Editor editor=kikit_pref.edit();
+            editor.putString("Uid",uid);
+            editor.apply();
 
             add = findViewById(R.id.add);
             dineouts = findViewById(R.id.dineouts);
@@ -115,6 +119,13 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
             e.printStackTrace();
         }
     }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        fetch();
+    }
+
     private void fetch() {
 
         Query query = FirebaseDatabase.getInstance().getReference().child("Story");
@@ -142,7 +153,7 @@ public class Homepage extends AppCompatActivity implements View.OnClickListener 
                     @Override
                     public void onClick(View v) {
                         Intent intent=new Intent(Homepage.this,StoryDisplay.class);
-
+                        intent.putExtra("From","home");
                         intent.putExtra("StoryKey", model.getStory_key());
                         intent.putExtra("uid", uid);
                         startActivity(intent);

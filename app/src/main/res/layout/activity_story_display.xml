@@ -38,7 +38,6 @@
         android:text="Lets go and take a dip in chill river water"
         android:textColor="#000000"
         android:textSize="20sp"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/title" />
 
@@ -47,7 +46,7 @@
         android:layout_height="wrap_content"
         android:inputType="date"
         android:text="20/12/2018"
-        android:textSize="25dp"
+        android:textSize="20dp"
         android:id="@+id/story_date"
         android:textStyle="italic"
         android:layout_margin="20dp"
@@ -59,7 +58,7 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="4dp"
         android:text="ArtisticDude"
-        android:textSize="25sp"
+        android:textSize="15sp"
         android:layout_margin="20dp"
         android:id="@+id/story_host"
         app:layout_constraintEnd_toEndOf="parent"
@@ -94,8 +93,11 @@
             android:textColor="#ffffff"/>
 
     </LinearLayout>
+
     <androidx.coordinatorlayout.widget.CoordinatorLayout
-        android:layout_width="match_parent"
         android:id="@+id/coordinator_layout"
-        android:layout_height="match_parent"/>
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        tools:layout_editor_absoluteX="-16dp"
+        tools:layout_editor_absoluteY="16dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

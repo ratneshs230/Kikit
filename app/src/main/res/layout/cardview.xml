@@ -1,70 +1,71 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
+<LinearLayout    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:id="@+id/root"
+    android:background="#ffffff"
     android:layout_height="wrap_content"
 android:layout_marginVertical="2dp"
     >
-    <androidx.cardview.widget.CardView
-        android:layout_width="match_parent"
-        android:padding="8dp"
 
-        android:layout_height="wrap_content">
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
+<androidx.constraintlayout.widget.ConstraintLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    >
     <ImageView
+        android:id="@+id/event_img"
         android:layout_width="106dp"
         android:layout_height="106dp"
-        android:id="@+id/event_img"
+        android:background="@drawable/editfield"
         android:padding="3dp"
         android:src="@drawable/forrest_drawing_mountains"
-        android:background="@drawable/editfield"/>
-
-    <LinearLayout
-        android:id="@+id/root"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginStart="2dp"
-        android:background="#F9FBE7"
-
-        android:orientation="vertical">
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:hint="Name"
-            android:gravity="center_vertical"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:padding="5dp"
-            android:textColor="#E91E63"
-            android:layout_weight="1"
-            android:id="@+id/eventName"/>
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginHorizontal="2dp"
-
-            android:layout_weight="1"
-            android:textSize="20sp"
-            android:textColor="#E91E63"
-            android:id="@+id/evetdesc"/>
-
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:id="@+id/eventhost"
-            android:textColor="#B2DFDB"
-            android:layout_marginHorizontal="2dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 
-            android:layout_weight="1"
+    <TextView
+        android:id="@+id/eventName"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center_vertical"
+        android:hint="Name"
+        android:padding="5dp"
+        android:textColor="#E91E63"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toEndOf="@+id/event_img"
+        app:layout_constraintTop_toTopOf="parent" />
 
-            android:gravity="end"/>
+    <TextView
+        android:id="@+id/evetdesc"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="2dp"
+        android:layout_weight="1"
+
+        android:textColor="#E91E63"
+
+        android:textSize="15dp"
+        app:layout_constraintBottom_toTopOf="@+id/eventhost"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@+id/event_img"
+        app:layout_constraintTop_toBottomOf="@+id/eventName" />
+
+    <TextView
+        android:id="@+id/eventhost"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="2dp"
+        android:layout_weight="1"
+        android:gravity="end"
+        android:textColor="#B2DFDB"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+         />
 
 
-    </LinearLayout>
-        </LinearLayout>
-    </androidx.cardview.widget.CardView>
+</androidx.constraintlayout.widget.ConstraintLayout>
 </LinearLayout>
